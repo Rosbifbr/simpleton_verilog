@@ -260,36 +260,63 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     assign oEA              = EA;
     
     // Descrição do CCPE, trocar por uma chamada de CCPE com equações
-    assign PE = 
-    //HLT 00
-    (entradas_cc == 5'b00000)  ?   3'b101:
-    (entradas_cc == 5'b00001)  ?   3'b101:
-    (entradas_cc == 5'b00010)  ?   3'b101:
-    (entradas_cc == 5'b00011)  ?   3'b101:
-    (entradas_cc == 5'b00100)  ?   3'b101:
-    (entradas_cc == 5'b00101)  ?   3'b101:
-    //STA 01
-    (entradas_cc == 5'b01000)  ?   3'b001:
-    (entradas_cc == 5'b01001)  ?   3'b100:
-    (entradas_cc == 5'b01010)  ?   3'b000:
-    (entradas_cc == 5'b01011)  ?   3'b000:
-    (entradas_cc == 5'b01100)  ?   3'b000:
-    (entradas_cc == 5'b01101)  ?   3'b000:
-    //LDA 10
-    (entradas_cc == 5'b10000)  ?   3'b001:
-    (entradas_cc == 5'b10001)  ?   3'b010:
-    (entradas_cc == 5'b10010)  ?   3'b000:
-    (entradas_cc == 5'b10011)  ?   3'b000:
-    (entradas_cc == 5'b10100)  ?   3'b000:
-    (entradas_cc == 5'b10101)  ?   3'b000:
-    //ADD 11
-    (entradas_cc == 5'b11000)  ?   3'b001:
-    (entradas_cc == 5'b11001)  ?   3'b011:
-    (entradas_cc == 5'b11010)  ?   3'b000:
-    (entradas_cc == 5'b11011)  ?   3'b000:
-    (entradas_cc == 5'b11100)  ?   3'b000:
-    (entradas_cc == 5'b11101)  ?   3'b000:
-    3'b101; //caso default para tudo
+    //assign PE = 
+    ////HLT 00
+    //(entradas_cc == 5'b00000)  ?   3'b101:
+    //(entradas_cc == 5'b00001)  ?   3'b101:
+    //(entradas_cc == 5'b00010)  ?   3'b101:
+    //(entradas_cc == 5'b00011)  ?   3'b101:
+    //(entradas_cc == 5'b00100)  ?   3'b101:
+    //(entradas_cc == 5'b00101)  ?   3'b101:
+    ////STA 01
+    //(entradas_cc == 5'b01000)  ?   3'b001:
+    //(entradas_cc == 5'b01001)  ?   3'b100:
+    //(entradas_cc == 5'b01010)  ?   3'b000:
+    //(entradas_cc == 5'b01011)  ?   3'b000:
+    //(entradas_cc == 5'b01100)  ?   3'b000:
+    //(entradas_cc == 5'b01101)  ?   3'b000:
+    ////LDA 10
+    //(entradas_cc == 5'b10000)  ?   3'b001:
+    //(entradas_cc == 5'b10001)  ?   3'b010:
+    //(entradas_cc == 5'b10010)  ?   3'b000:
+    //(entradas_cc == 5'b10011)  ?   3'b000:
+    //(entradas_cc == 5'b10100)  ?   3'b000:
+    //(entradas_cc == 5'b10101)  ?   3'b000:
+    ////ADD 11
+    //(entradas_cc == 5'b11000)  ?   3'b001:
+    //(entradas_cc == 5'b11001)  ?   3'b011:
+    //(entradas_cc == 5'b11010)  ?   3'b000:
+    //(entradas_cc == 5'b11011)  ?   3'b000:
+    //(entradas_cc == 5'b11100)  ?   3'b000:
+    //(entradas_cc == 5'b11101)  ?   3'b000:
+    //3'b101; //caso default para tudo
+
+    //Circuit implementation
+    wire ecc43nor;
+    nor (ecc43nor, entradas_cc[4], entradas_cc[3]); //minterm 1
+    wire ecc43and, norrest;
+    nor (norrest, entradas_cc[4], entradas_cc[2], entradas_cc[1], entradas_cc[0]); //all others negated
+    and (ecc43and, entradas_cc[3], norrest); //maxterm 2
+    //last digit
+    or(PE[2], ecc43nor, ecc43and); //Ultimo digito 1 when nor (ecc4, ecc3) OR and (necc4, ecc3)
+
+    wire eccrestnor;
+    nor (eccrestnor, entradas_cc[2], entradas_cc[1]); //mintermo1
+    //PE1 = true sse (ecc4 & ecc0) & !(ecc2 | ecc1) ;; ecc3 = dont care
+    and (PE[1], entradas_cc[0], entradas_cc[4], eccrestnor); //second digit
+
+    //PE0
+    //ecc43nor -> maxterm
+    //eccrestnor & ecc4 & ecc3 -> maxterm
+    //(eccrestnor & !ecc0) | ecc4 | ecc3 -> maxterm
+    wire lastm1, necc0, _lastm2, lastm2;
+    and (lastm1, eccrestnor, entradas_cc[4], entradas_cc[3]);
+
+    not (necc0, entradas_cc[0]);
+    and(_lastm2, eccrestnor, necc0);
+    or (lastm2, _lastm2, entradas_cc[4], entradas_cc[3]);
+    or (PE[0], ecc43nor, lastm1, lastm2);
+
     
     
     //descrição do CCSaida, trocar por uma chamada de CCSaida com equações
@@ -325,16 +352,26 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     //        EA <= PE;
     //end
     
-    //circuit implementation
-    invert clock and reset  for edge detection
-    wire valid, nrst;
+    //circuit implementation (bad but should work)
+    //invert clock and reset for edge detection
+    wire valid, nrst, _posedge;
+    wire _sd, sd[6:0]; //gambiarra to generate small delay
+
+    //pass clk through sd and some gates to gnerate delay (wasteful, i know)
+    and (sd[0], clk, 1);
+    and (sd[1], sd[0], 1);
+    and (sd[2], sd[1], 1);
+    and (sd[3], sd[2], 1);
+    and (sd[4], sd[3], 1);
+    and (sd[5], sd[4], 1);
+    not (_sd, sd[5]); //_sd = !sd[5]
+
+    and (_posedge, _sd, clk); //detect rising edge
     not (nrst, rst);
 
-    and (valid, clk, nrst); //posedge clock on and rst off
+    and (valid, _posedge, nrst); //posedge clock on and rst off
     and (EA[1], valid, PE[1]);
     and (EA[0], valid, PE[0]);
-
-    
 endmodule
 
 
@@ -369,10 +406,6 @@ module trad_inst_pit(clk, enable, inst_in, inst_out);
         
         
         endmodule
-        
-        
-        
-        
         
         
         module display7seg(in, out);
