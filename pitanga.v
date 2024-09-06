@@ -292,46 +292,55 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     //3'b101; //caso default para tudo
 
     //Circuit implementation
-    wire ecc43nor;
-    nor (ecc43nor, entradas_cc[4], entradas_cc[3]); //minterm 1
-    wire ecc43and, norrest;
-    nor (norrest, entradas_cc[4], entradas_cc[2], entradas_cc[1], entradas_cc[0]); //all others negated
-    and (ecc43and, entradas_cc[3], norrest); //maxterm 2
-    //last digit
-    or(PE[2], ecc43nor, ecc43and); //Ultimo digito 1 when nor (ecc4, ecc3) OR and (necc4, ecc3)
-
-    wire eccrestnor;
-    nor (eccrestnor, entradas_cc[2], entradas_cc[1]); //mintermo1
-    //PE1 = true sse (ecc4 & ecc0) & !(ecc2 | ecc1) ;; ecc3 = dont care
-    and (PE[1], entradas_cc[0], entradas_cc[4], eccrestnor); //second digit
-
-    //PE0
-    //ecc43nor -> maxterm
-    //eccrestnor & ecc4 & ecc3 -> maxterm
-    //(eccrestnor & !ecc0) | ecc4 | ecc3 -> maxterm
-    wire lastm1, necc0, _lastm2, lastm2;
-    and (lastm1, eccrestnor, entradas_cc[4], entradas_cc[3]);
-
-    not (necc0, entradas_cc[0]);
-    and(_lastm2, eccrestnor, necc0);
-    or (lastm2, _lastm2, entradas_cc[4], entradas_cc[3]);
-    or (PE[0], ecc43nor, lastm1, lastm2);
-
+    //helper wires
+    wire necc[5:0];
+    not (necc[0], entradas_cc[0]);
+    not (necc[1], entradas_cc[1]);
+    not (necc[2], entradas_cc[2]);
+    not (necc[3], entradas_cc[3]);
+    not (necc[4], entradas_cc[4]);
     
+    wire m01, m02, m03; //three maxterm for PE0
+    and (m01, entradas_cc[4], entradas_cc[3], necc[2], necc[1]);
+    and (m02, necc[4], necc[3]);
+    and (m03, entradas_cc[4], necc[3], necc[2], necc[1], necc[0]);
+    or (PE[0], m01, m02, m03);
+
+    and (PE[1], entradas_cc[4], necc[2], necc[1], entradas_cc[0]); //only one term for pe1 (yes ,3 is dont care)
+
+    wire m21, m22;
+    and (m21, necc[4], necc[3]);
+    and (m22, necc[4], entradas_cc[3], necc[2], necc[1], entradas_cc[0]);
+    or (PE[2], m21, m22);
     
     //descrição do CCSaida, trocar por uma chamada de CCSaida com equações
     wire [6:0] saidas;
     
-    assign saidas = 
-    //HLT 00
-    (EA == 3'b000)  ?   7'b1110000: //Estado inicial igual para todas instruções
-    (EA == 3'b001)  ?   7'b1111000: //Le imediato, mesma coisa para LDA, ADD e STA
-    (EA == 3'b010)  ?   7'b1000001: // acc-<mem PD = 0, definimos
-    (EA == 3'b011)  ?   7'b1000011: // acc-<mem+acc soma = 1, definimos
-    (EA == 3'b100)  ?   7'b1000100: // mem<-acc
-    (EA == 3'b101)  ?   7'b0000000: // HLT
+//    assign saidas = 
+//    //HLT 00
+//    (EA == 3'b000)  ?   7'b1110000: //Estado inicial igual para todas instruções
+//    (EA == 3'b001)  ?   7'b1111000: //Le imediato, mesma coisa para LDA, ADD e STA
+//    (EA == 3'b010)  ?   7'b1000001: // acc-<mem PD = 0, definimos
+//    (EA == 3'b011)  ?   7'b1000011: // acc-<mem+acc soma = 1, definimos
+//    (EA == 3'b100)  ?   7'b1000100: // mem<-acc
+//    (EA == 3'b101)  ?   7'b0000000: // HLT
+//    7'b0000000; //default recebe 0
     
-    7'b0000000; //default recebe 0
+    //boilerplate
+    wire nea0, nea1, nea2;
+    not (nea0, EA[0]);
+    not (nea1, EA[1]);
+    not (nea2, EA[2]);
+
+    //TODO: implementar caso default. importantíssimo; -- Nao tratando caso 6 porque wire parece
+    //ter apenas 6 posições no total
+    buf (saidas[0], EA[1]); //saidas0 = 1 sse EA1
+    and (saidas[1], EA[0], EA[1]); //saidas1 = 1 sse EA0 & EA1
+    and (saidas[2], EA[2], nea1, nea0); //saidas 2 = 1 sse EA2 & !EA1 & !EA0
+    and (saidas[3], nea2, nea1, EA[0]); //saidas 3 = 1 sse !EA2 & !EA1 & EA0
+    and (saidas[4], nea2, nea1); //saidas 4 = 1 sse !EA2 & !EA1
+    and (saidas[5], nea2, nea1); //saidas 5 = 1 sse !EA2 & !EA1
+    and (saidas[6], EA[2], nea1, EA[0]); //saidas 5 = 1 sse !EA2 & !EA1
     
     //atribui as saidas, talvez parte do ccsaida
     buf(selPC, saidas[6]);
@@ -370,6 +379,7 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     not (nrst, rst);
 
     and (valid, _posedge, nrst); //posedge clock on and rst off
+    and (EA[2], valid, PE[2]);
     and (EA[1], valid, PE[1]);
     and (EA[0], valid, PE[0]);
 endmodule
