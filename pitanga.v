@@ -125,20 +125,31 @@ endmodule
 module reg8_pit(clk, rst, set, cen, d, q);
     input clk, rst, set, cen;
     input [7:0] d;
-    output reg [7:0] q;
-    
+    output [7:0] q; //should be reg? idontknow
+    wire [7:0] q_wire;
     //another d-flip flop.
     //when reset, q = 0
     //when set, q = 1
     //when cen, q = d
-    ffdrse ff0(.d(d[0]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[0]));
-    ffdrse ff1(.d(d[1]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[1]));
-    ffdrse ff2(.d(d[2]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[2]));
-    ffdrse ff3(.d(d[3]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[3]));
-    ffdrse ff4(.d(d[4]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[4]));
-    ffdrse ff5(.d(d[5]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[5]));
-    ffdrse ff6(.d(d[6]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[6]));
-    ffdrse ff7(.d(d[7]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[7]));
+    //	 -    always@(posedge clk, posedge rst) begin
+    //-        if (rst)
+    //-            q <= 8'b00000000;
+    //-        else if (set)
+    //-            q <= 8'b11111111;
+    //-        else if (cen)
+    //-            q <= d;
+    //-        else
+    //-            q <= q;
+    //-    end
+    ffdrse ff0(.d(d[0]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[0]));
+    ffdrse ff1(.d(d[1]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[1]));
+    ffdrse ff2(.d(d[2]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[2]));
+    ffdrse ff3(.d(d[3]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[3]));
+    ffdrse ff4(.d(d[4]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[4]));
+    ffdrse ff5(.d(d[5]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[5]));
+    ffdrse ff6(.d(d[6]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[6]));
+    ffdrse ff7(.d(d[7]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q_wire[7]));
+    assign q = q_wire;
 endmodule
 
 
@@ -241,7 +252,7 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     wire enable;
     wire [4:0] entradas_cc;
     wire [2:0] PE;
-    reg [2:0] EA;
+    wire [2:0] EA;
     
     //instancia do tradutor: não mexe que estraga: inicio
     nor (enable, EA[2], EA[1], EA[0]);
@@ -397,16 +408,32 @@ module trad_inst_pit(clk, enable, inst_in, inst_out);
     
     wire [1:0] inst_temp_variavel;
     wire [1:0] inst_temp_registrado;
-    reg [1:0] inst_reg;
-    // Descrição da arquitetura
-    assign inst_temp_variavel = 
-    (inst_in == 4'b1111)  ?   2'b00: //HLT
-    (inst_in == 4'b0001)  ?   2'b01: //STA
-    (inst_in == 4'b0010)  ?   2'b10: //LDA
-    (inst_in == 4'b0011)  ?   2'b11: //ADD
-    2'b00; //Caso default, mapeado para HLT
+    wire [1:0] inst_reg;
 
-    assign inst_temp_registrado = inst_reg;
+    //negate inst in
+    wire [3:0] ninst_in;
+    not (ninst_in[0], inst_in[0]);
+    not (ninst_in[1], inst_in[1]);
+    not (ninst_in[2], inst_in[2]);
+    not (ninst_in[3], inst_in[3]);
+
+    //Both off when all 1
+    and (inst_temp_variavel[0], ninst_in[3], ninst_in[2], inst_in[0]); // 00x1 ? x1
+    and (inst_temp_variavel[1], ninst_in[3], ninst_in[2], inst_in[1]); // 001x ? 1x
+    //else 00
+
+    //// Descrição da arquitetura
+    //assign inst_temp_variavel = 
+    //(inst_in == 4'b1111)  ?   2'b00: //HLT
+    //(inst_in == 4'b0001)  ?   2'b01: //STA
+    //(inst_in == 4'b0010)  ?   2'b10: //LDA
+    //(inst_in == 4'b0011)  ?   2'b11: //ADD
+    //2'b00; //Caso default, mapeado para HLT
+
+    //assign inst_temp_registrado = inst_reg; //copy before write by flipflop
+    buf (inst_temp_registrado[0], inst_reg[0]);
+    buf (inst_temp_registrado[1], inst_reg[1]);
+
     assign inst_out = 
     (enable) ? inst_temp_variavel : inst_temp_registrado;
     
@@ -416,6 +443,7 @@ module trad_inst_pit(clk, enable, inst_in, inst_out);
 //            inst_reg <= inst_temp_variavel;   //
 //    end
     
+    //use flipflops instead of always block to write to inst_reg
     ffdrse ff_inst_reg0(.d(inst_temp_variavel[0]), .clk(clk), .rst(1'b0), .set(1'b0), .enable(enable), .q(inst_reg[0]));
     ffdrse ff_inst_reg1(.d(inst_temp_variavel[1]), .clk(clk), .rst(1'b0), .set(1'b0), .enable(enable), .q(inst_reg[1]));
 endmodule
