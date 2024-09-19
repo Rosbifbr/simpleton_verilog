@@ -95,10 +95,6 @@ module simpleton_pitanga(clk,
     
 endmodule
 
-
-
-
-
 //mais_um incrementapc(.a(), .s());
 module mais_um_pit(a, s);
     
@@ -109,8 +105,6 @@ module mais_um_pit(a, s);
     
     
 endmodule
-
-
 
 //mux21_8b muxpc(.sel(), .e1(), .e0(), .saida(fio_pctem_1));
 module mux21_8b_pit(sel, e1, e0, saida);
@@ -133,16 +127,18 @@ module reg8_pit(clk, rst, set, cen, d, q);
     input [7:0] d;
     output reg [7:0] q;
     
-    always@(posedge clk, posedge rst) begin
-        if (rst)
-            q <= 8'b00000000;
-        else if (set)
-            q <= 8'b11111111;
-        else if (cen)
-            q <= d;
-        else
-            q <= q;
-    end
+    //another d-flip flop.
+    //when reset, q = 0
+    //when set, q = 1
+    //when cen, q = d
+    ffdrse ff0(.d(d[0]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[0]));
+    ffdrse ff1(.d(d[1]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[1]));
+    ffdrse ff2(.d(d[2]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[2]));
+    ffdrse ff3(.d(d[3]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[3]));
+    ffdrse ff4(.d(d[4]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[4]));
+    ffdrse ff5(.d(d[5]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[5]));
+    ffdrse ff6(.d(d[6]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[6]));
+    ffdrse ff7(.d(d[7]), .clk(clk), .rst(rst), .set(set), .enable(cen), .q(q[7]));
 endmodule
 
 
@@ -173,6 +169,7 @@ module memoria_pit(
 endmodule
 
 
+//Programa ja pronto,
 module rom_prog_pit(
     
     input [7:0] address,      // 8-bit register input
@@ -361,30 +358,36 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     //        EA <= PE;
     //end
     
-    //circuit implementation (bad but should work)
-    //invert clock and reset for edge detection
-    wire valid, nrst, _posedge;
-    wire _sd, sd[6:0]; //gambiarra to generate small delay
-
-    //pass clk through sd and some gates to gnerate delay (wasteful, i know)
-    and (sd[0], clk, 1);
-    and (sd[1], sd[0], 1);
-    and (sd[2], sd[1], 1);
-    and (sd[3], sd[2], 1);
-    and (sd[4], sd[3], 1);
-    and (sd[5], sd[4], 1);
-    not (_sd, sd[5]); //_sd = !sd[5]
-
-    and (_posedge, _sd, clk); //detect rising edge
-    not (nrst, rst);
-
-    and (valid, _posedge, nrst); //posedge clock on and rst off
-    and (EA[2], valid, PE[2]);
-    and (EA[1], valid, PE[1]);
-    and (EA[0], valid, PE[0]);
+    // Implement flip-flops for each bit of the state register
+    ffdrse ff2(.d(PE[2]), .clk(clk), .rst(rst), .set(1'b0), .enable(1'b1), .q(EA[2]));
+    ffdrse ff1(.d(PE[1]), .clk(clk), .rst(rst), .set(1'b0), .enable(1'b1), .q(EA[1]));
+    ffdrse ff0(.d(PE[0]), .clk(clk), .rst(rst), .set(1'b0), .enable(1'b1), .q(EA[0]));
 endmodule
 
+// Flip Flop para unidade de controle (posedge detection)
+/****************************************** (c) 2023 inPlace Design Automation
+  Módulo    : ffdrse
+  Descrição : flip flop tipo D para ser usado como caixa preta
+******************************************************************************/
+module ffdrse(d, clk, rst, set, enable, q);
+// Sinais de Controle
+    input       d;          // entrada D
+    input       clk;        // relógio do sistema (clock)
+    input       rst;        // reset, zera saida q
+    input       set;        // set, seta a saida para 1
+    input       enable;        // habilita o relogio
+    output      reg q;        // saida do bit memorizado internamente
 
+    // Bloco de controle do contador de 2 bits
+    always@(posedge clk) begin
+        if(rst)
+            q <= 1'b0;   // reseta, ou seja q=0
+        else if(set)
+            q <= 1'b1;   // seta, ou seja q=1
+        else if (enable)  // so vai flip-flopear se habilitado
+            q <= d;   // flip-flopeia, ou seja copia d para q
+    end
+endmodule  
 
 module trad_inst_pit(clk, enable, inst_in, inst_out);
     input clk;
@@ -402,49 +405,47 @@ module trad_inst_pit(clk, enable, inst_in, inst_out);
     (inst_in == 4'b0010)  ?   2'b10: //LDA
     (inst_in == 4'b0011)  ?   2'b11: //ADD
     2'b00; //Caso default, mapeado para HLT
+
     assign inst_temp_registrado = inst_reg;
-    
     assign inst_out = 
     (enable) ? inst_temp_variavel : inst_temp_registrado;
     
     
-    always@(posedge clk) begin
-        if (enable)
-            inst_reg <= inst_temp_variavel;   //
-            end
+//    always@(posedge clk) begin
+//        if (enable)
+//            inst_reg <= inst_temp_variavel;   //
+//    end
+    
+    ffdrse ff_inst_reg0(.d(inst_temp_variavel[0]), .clk(clk), .rst(1'b0), .set(1'b0), .enable(enable), .q(inst_reg[0]));
+    ffdrse ff_inst_reg1(.d(inst_temp_variavel[1]), .clk(clk), .rst(1'b0), .set(1'b0), .enable(enable), .q(inst_reg[1]));
+endmodule
         
         
-        
-        endmodule
-        
-        
-        module display7seg(in, out);
-            input [3:0]	in;
-            output[6:0]	out;
-            // Descrição da arquitetura
-            assign out = 
-            (in == 4'b0000)  ?   7'b1111110:
-            (in == 4'b0001)  ?   7'b0110000:
-            (in == 4'b0010)  ?   7'b1101101:
-            (in == 4'b0011)  ?   7'b1111001:
-            
-            (in == 4'b0100)  ?   7'b0110011:
-            (in == 4'b0101)  ?   7'b1011011:
-            (in == 4'b0110)  ?   7'b1011111:
-            (in == 4'b0111)  ?   7'b1110000:
-            
-            (in == 4'b1000)  ?   7'b1111111:
-            (in == 4'b1001)  ?   7'b1111011:
-            (in == 4'b1010)  ?   7'b1110111:
-            (in == 4'b1011)  ?   7'b0011111:
-            
-            (in == 4'b1100)  ?   7'b1001110:
-            (in == 4'b1101)  ?   7'b0111101:
-            (in == 4'b1110)  ?   7'b1001111:
-            7'b1000111;
-            
-            
-        endmodule
-        
-        
-        
+module display7seg(in, out);
+    input [3:0]	in;
+    output[6:0]	out;
+    // Descrição da arquitetura
+    assign out = 
+    (in == 4'b0000)  ?   7'b1111110:
+    (in == 4'b0001)  ?   7'b0110000:
+    (in == 4'b0010)  ?   7'b1101101:
+    (in == 4'b0011)  ?   7'b1111001:
+    
+    (in == 4'b0100)  ?   7'b0110011:
+    (in == 4'b0101)  ?   7'b1011011:
+    (in == 4'b0110)  ?   7'b1011111:
+    (in == 4'b0111)  ?   7'b1110000:
+    
+    (in == 4'b1000)  ?   7'b1111111:
+    (in == 4'b1001)  ?   7'b1111011:
+    (in == 4'b1010)  ?   7'b1110111:
+    (in == 4'b1011)  ?   7'b0011111:
+    
+    (in == 4'b1100)  ?   7'b1001110:
+    (in == 4'b1101)  ?   7'b0111101:
+    (in == 4'b1110)  ?   7'b1001111:
+    7'b1000111;
+    
+    
+endmodule
+
