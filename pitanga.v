@@ -197,15 +197,17 @@ module rom_prog_pit(
     not(naddress[6], address[6]);
     not(naddress[7], address[7]);
     
-    and(minterm[0], naddress[2], naddress[1], naddress[0]);
-    and(minterm[1], naddress[2], naddress[1],  address[0]);
-    and(minterm[2], naddress[2],  address[1], naddress[0]);
-    and(minterm[3], naddress[2],  address[1],  address[0]);
-    and(minterm[4],  address[2], naddress[1], naddress[0]);
-    and(minterm[5],  address[2], naddress[1],  address[0]);
+    //minterms for addresses
+    and(minterm[0], naddress[2], naddress[1], naddress[0]); //000
+    and(minterm[1], naddress[2], naddress[1],  address[0]); //001
+    and(minterm[2], naddress[2],  address[1], naddress[0]); //010
+    and(minterm[3], naddress[2],  address[1],  address[0]); //011
+    and(minterm[4],  address[2], naddress[1], naddress[0]); //100
+    and(minterm[5],  address[2], naddress[1],  address[0]); //....
     and(minterm[6],  address[2],  address[1], naddress[0]);
     and(minterm[7],  address[2],  address[1],  address[0]);
     
+    //memory content values 
     or(content[0], minterm[1], minterm[3], minterm[7]);
     or(content[1], minterm[1], minterm[3]);
     or(content[2], minterm[1], minterm[3], minterm[7]);
@@ -214,6 +216,16 @@ module rom_prog_pit(
     or(content[5], minterm[0], minterm[2], minterm[6]);
     buf(content[6], minterm[6]);
     or(content[7], minterm[5], minterm[6]);
+
+    //// ROM content (check trad inst pit and what part of memout is passed there)
+    //000 ? 00100000 //LDA 0
+    //001 ? 00000111 //HLT 0111 arg is dont care
+    //010 ? 00110000 //ADD 0
+    //011 ? 00000111 //HLT 0111
+    //100 ? 00010000 //STA 0
+    //101 ? 10000000 //HLT 0 (default)
+    //110 ? 11110000 //HLT 0
+    //111 ? 00000101 //HLT 0
     
 endmodule
 
