@@ -1,20 +1,26 @@
 
-module simpleton_pitanga(clk,
-                         rst,
-                         oEndMem_7s,
-                         oEndMem_MS,
-                         oMem128_7s,
-                         oEA);
+module simpleton_pitanga(
+    clk,
+    rst,
+    oEndMem_7s,
+    oEndMem_MS,
+    oMem128_7s,
+    OutAC,
+    OutPC,
+    OutREM,
+    resultado,
+    oEA
+  );
     input       clk;        // relógio do sistema (clock)
     input       rst;        // reset
     
     //output      blk;        // saída de relógio (para piscar led)
     
     // Sinais de Dados
-    //output [7:0] OutAC;   // sair o valor do acumulador para debugar
-    //output [7:0] OutPC;   // sair o valor do PC para debugar
-    //output [7:0] OutREM;   // sair o valor do REM para debugar
-    //output [7:0] resultado;   // resultado da memoria, para debugar
+    output [7:0] OutAC;   // sair o valor do acumulador para debugar
+    output [7:0] OutPC;   // sair o valor do PC para debugar
+    output [7:0] OutREM;   // sair o valor do REM para debugar
+    output [7:0] resultado;   // resultado da memoria, para debugar
     
     //output	oselPC;
     //output	oenPC;
@@ -50,9 +56,9 @@ module simpleton_pitanga(clk,
     wire [7:0] DregAC; // entrada do AC
     wire [7:0] QregAC; // saida do AC
     
-    //assign OutAC  = QregAC;
-    //assign OutPC  = QregPC;
-    //assign OutREM = Qrem;
+    assign OutAC  = QregAC;
+    assign OutPC  = QregPC;
+    assign OutREM = Qrem;
     
     display7seg disp_EndMem(.in(EndMem[3:0]), .out(oEndMem_7s));
     display7seg disp_Mem128(.in(wMem128[3:0]), .out(oMem128_7s));
@@ -218,10 +224,10 @@ module rom_prog_pit(
     or(content[7], minterm[5], minterm[6]);
 
     //// ROM content (check trad inst pit and what part of memout is passed there)
-    //000 ? 00100000 //LDA 0
-    //001 ? 00000111 //HLT 0111 arg is dont care
+    //000 ? 00100000 //LDA
+    //001 ? 00000111 //0111
     //010 ? 00110000 //ADD 0
-    //011 ? 00000111 //HLT 0111
+    //011 ? 00000111 //0111
     //100 ? 00010000 //STA 0
     //101 ? 10000000 //HLT 0 (default)
     //110 ? 11110000 //HLT 0
@@ -279,7 +285,7 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     assign entradas_cc[2:0] = EA;
     assign oEA              = EA;
     
-    // Descrição do CCPE, trocar por uma chamada de CCPE com equações
+    // Descrição do CCPE, trocar por uma chamada de CCPE portas logicas
     //assign PE = 
     ////HLT 00
     //(entradas_cc == 5'b00000)  ?   3'b101:
@@ -333,7 +339,7 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     and (m22, necc[4], entradas_cc[3], necc[2], necc[1], entradas_cc[0]);
     or (PE[2], m21, m22);
     
-    //descrição do CCSaida, trocar por uma chamada de CCSaida com equações
+    //descrição do CCSaida, trocar por uma chamada de CCSaida portas logicas
     wire [6:0] saidas;
     
 //    assign saidas = 

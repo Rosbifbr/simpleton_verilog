@@ -1,0 +1,21 @@
+Info: Start Nativelink Simulation process
+Info: NativeLink has detected Verilog design -- Verilog simulation models will be used
+
+========= EDA Simulation Settings =====================
+
+Sim Mode              :  RTL
+Family                :  cycloneivgx
+Quartus root          :  /media/rodrigo/3f0623f2-dce1-4893-b3e3-61b6438216a2/VirtualMachines/Quartus-web-13.1.0.162-linux/Install/quartus/linux/
+Quartus sim root      :  /media/rodrigo/3f0623f2-dce1-4893-b3e3-61b6438216a2/VirtualMachines/Quartus-web-13.1.0.162-linux/Install/quartus/eda/sim_lib
+Simulation Tool       :  modelsim-altera
+Simulation Language   :  verilog
+Simulation Mode       :  GUI
+Sim Output File       :  
+Sim SDF file          :  
+Sim dir               :  simulation/modelsim
+
+=======================================================
+
+Info: Starting NativeLink simulation with ModelSim-Altera software
+Sourced NativeLink script /media/rodrigo/3f0623f2-dce1-4893-b3e3-61b6438216a2/VirtualMachines/Quartus-web-13.1.0.162-linux/Install/quartus/common/tcl/internal/nativelink/modelsim.tcl
+Info: Spawning ModelSim-Altera Simulation software 

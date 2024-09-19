@@ -1,0 +1,139 @@
+Flow report for simpleton
+Thu Sep 19 13:52:27 2024
+Quartus II 32-bit Version 13.1.0 Build 162 10/23/2013 SJ Web Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Flow Summary
+  3. Flow Settings
+  4. Flow Non-Default Global Settings
+  5. Flow Elapsed Time
+  6. Flow OS Summary
+  7. Flow Log
+  8. Flow Messages
+  9. Flow Suppressed Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2013 Altera Corporation
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, Altera MegaCore Function License 
+Agreement, or other applicable license agreement, including, 
+without limitation, that your use is for the sole purpose of 
+programming logic devices manufactured by Altera and sold by 
+Altera or its authorized distributors.  Please refer to the 
+applicable agreement for further details.
+
+
+
++---------------------------------------------------------------------------------+
+; Flow Summary                                                                    ;
++------------------------------------+--------------------------------------------+
+; Flow Status                        ; Successful - Thu Sep 19 13:52:27 2024      ;
+; Quartus II 32-bit Version          ; 13.1.0 Build 162 10/23/2013 SJ Web Edition ;
+; Revision Name                      ; simpleton                                  ;
+; Top-level Entity Name              ; simpleton_pitanga                          ;
+; Family                             ; Cyclone IV GX                              ;
+; Total logic elements               ; 95 / 21,280 ( < 1 % )                      ;
+;     Total combinational functions  ; 95 / 21,280 ( < 1 % )                      ;
+;     Dedicated logic registers      ; 37 / 21,280 ( < 1 % )                      ;
+; Total registers                    ; 37                                         ;
+; Total pins                         ; 52 / 167 ( 31 % )                          ;
+; Total virtual pins                 ; 0                                          ;
+; Total memory bits                  ; 0 / 774,144 ( 0 % )                        ;
+; Embedded Multiplier 9-bit elements ; 0 / 80 ( 0 % )                             ;
+; Total GXB Receiver Channel PCS     ; 0 / 4 ( 0 % )                              ;
+; Total GXB Receiver Channel PMA     ; 0 / 4 ( 0 % )                              ;
+; Total GXB Transmitter Channel PCS  ; 0 / 4 ( 0 % )                              ;
+; Total GXB Transmitter Channel PMA  ; 0 / 4 ( 0 % )                              ;
+; Total PLLs                         ; 0 / 4 ( 0 % )                              ;
+; Device                             ; EP4CGX22CF19C6                             ;
+; Timing Models                      ; Final                                      ;
++------------------------------------+--------------------------------------------+
+
+
++-----------------------------------------+
+; Flow Settings                           ;
++-------------------+---------------------+
+; Option            ; Setting             ;
++-------------------+---------------------+
+; Start date & time ; 09/19/2024 13:52:04 ;
+; Main task         ; Compilation         ;
+; Revision Name     ; simpleton           ;
++-------------------+---------------------+
+
+
++---------------------------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                                            ;
++-------------------------------------+--------------------------------------------------+---------------+-------------------+----------------+
+; Assignment Name                     ; Value                                            ; Default Value ; Entity Name       ; Section Id     ;
++-------------------------------------+--------------------------------------------------+---------------+-------------------+----------------+
+; COMPILER_SIGNATURE_ID               ; 0.172676472432687                                ; --            ; --                ; --             ;
+; EDA_GENERATE_FUNCTIONAL_NETLIST     ; On                                               ; --            ; --                ; eda_simulation ;
+; EDA_NETLIST_WRITER_OUTPUT_DIR       ; /home/rodrigo/Desktop/becnhmark/simulation/qsim/ ; --            ; --                ; eda_simulation ;
+; EDA_OUTPUT_DATA_FORMAT              ; Verilog Hdl                                      ; --            ; --                ; eda_simulation ;
+; EDA_SIMULATION_TOOL                 ; ModelSim-Altera (Verilog)                        ; <None>        ; --                ; --             ;
+; EDA_TIME_SCALE                      ; 1 ps                                             ; --            ; --                ; eda_simulation ;
+; PARTITION_COLOR                     ; 16764057                                         ; --            ; simpleton_pitanga ; Top            ;
+; PARTITION_FITTER_PRESERVATION_LEVEL ; PLACEMENT_AND_ROUTING                            ; --            ; simpleton_pitanga ; Top            ;
+; PARTITION_NETLIST_TYPE              ; SOURCE                                           ; --            ; simpleton_pitanga ; Top            ;
+; PROJECT_OUTPUT_DIRECTORY            ; output_files                                     ; --            ; --                ; --             ;
+; TOP_LEVEL_ENTITY                    ; simpleton_pitanga                                ; simpleton     ; --                ; --             ;
++-------------------------------------+--------------------------------------------------+---------------+-------------------+----------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                             ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Analysis & Synthesis      ; 00:00:01     ; 1.0                     ; 398 MB              ; 00:00:01                           ;
+; Fitter                    ; 00:00:06     ; 1.0                     ; 626 MB              ; 00:00:06                           ;
+; Assembler                 ; 00:00:01     ; 1.0                     ; 397 MB              ; 00:00:01                           ;
+; TimeQuest Timing Analyzer ; 00:00:01     ; 1.0                     ; 403 MB              ; 00:00:01                           ;
+; EDA Netlist Writer        ; 00:00:00     ; 1.0                     ; 365 MB              ; 00:00:00                           ;
+; EDA Netlist Writer        ; 00:00:00     ; 1.0                     ; 369 MB              ; 00:00:00                           ;
+; EDA Netlist Writer        ; 00:00:00     ; 1.0                     ; 369 MB              ; 00:00:00                           ;
+; Total                     ; 00:00:09     ; --                      ; --                  ; 00:00:09                           ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+
+
++-----------------------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                                     ;
++---------------------------+------------------+------------------+------------------+----------------+
+; Module Name               ; Machine Hostname ; OS Name          ; OS Version       ; Processor type ;
++---------------------------+------------------+------------------+------------------+----------------+
+; Analysis & Synthesis      ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; Fitter                    ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; Assembler                 ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; TimeQuest Timing Analyzer ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; EDA Netlist Writer        ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; EDA Netlist Writer        ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
+; EDA Netlist Writer        ; debian-asus      ; Debian GNU/Linux ; Debian GNU/Linux ; x86_64         ;
++---------------------------+------------------+------------------+------------------+----------------+
+
+
+------------
+; Flow Log ;
+------------
+quartus_map --read_settings_files=on --write_settings_files=off simpleton -c simpleton
+quartus_fit --read_settings_files=off --write_settings_files=off simpleton -c simpleton
+quartus_asm --read_settings_files=off --write_settings_files=off simpleton -c simpleton
+quartus_sta simpleton -c simpleton
+quartus_eda --read_settings_files=off --write_settings_files=off simpleton -c simpleton
+quartus_eda --gen_testbench --check_outputs=on --tool=modelsim_oem --format=verilog simpleton -c simpleton --vector_source=/home/rodrigo/Desktop/becnhmark/Waveform.vwf --testbench_file=/home/rodrigo/Desktop/becnhmark/simulation/qsim/Waveform.vwf.vt
+quartus_eda --functional=on --flatten_buses=off --simulation=on --tool=modelsim_oem --format=verilog --output_directory=/home/rodrigo/Desktop/becnhmark/simulation/qsim/ simpleton -c simpleton
+
+
+
