@@ -182,34 +182,34 @@ module rom_prog_pit(
     input [7:0] address,      // 8-bit register input
     output  [7:0] content);   // 8-bit register output
 
-   wire [7:0] naddress;
-   wire [7:0] minterm;
-   not(naddress[0], address[0]);
-   not(naddress[1], address[1]);
-   not(naddress[2], address[2]);
-   not(naddress[3], address[3]);
-   not(naddress[4], address[4]);
-   not(naddress[5], address[5]);
-   not(naddress[6], address[6]);
-   not(naddress[7], address[7]);
-   
-   and(minterm[0], naddress[2], naddress[1], naddress[0]);
-   and(minterm[1], naddress[2], naddress[1],  address[0]);
-   and(minterm[2], naddress[2],  address[1], naddress[0]);
-   and(minterm[3], naddress[2],  address[1],  address[0]);
-   and(minterm[4],  address[2], naddress[1], naddress[0]);
-   and(minterm[5],  address[2], naddress[1],  address[0]);
-   and(minterm[6],  address[2],  address[1], naddress[0]);
-   and(minterm[7],  address[2],  address[1],  address[0]);
+   //wire [7:0] naddress;
+   //wire [7:0] minterm;
+   //not(naddress[0], address[0]);
+   //not(naddress[1], address[1]);
+   //not(naddress[2], address[2]);
+   //not(naddress[3], address[3]);
+   //not(naddress[4], address[4]);
+   //not(naddress[5], address[5]);
+   //not(naddress[6], address[6]);
+   //not(naddress[7], address[7]);
+   //
+   //and(minterm[0], naddress[2], naddress[1], naddress[0]);
+   //and(minterm[1], naddress[2], naddress[1],  address[0]);
+   //and(minterm[2], naddress[2],  address[1], naddress[0]);
+   //and(minterm[3], naddress[2],  address[1],  address[0]);
+   //and(minterm[4],  address[2], naddress[1], naddress[0]);
+   //and(minterm[5],  address[2], naddress[1],  address[0]);
+   //and(minterm[6],  address[2],  address[1], naddress[0]);
+   //and(minterm[7],  address[2],  address[1],  address[0]);
 
-   or(content[0], minterm[1], minterm[3], minterm[7]);
-   or(content[1], minterm[1], minterm[3]);
-   or(content[2], minterm[1], minterm[3], minterm[7]);
-   and(content[3], address[0], naddress[0]); //none
-   or(content[4], minterm[2], minterm[4], minterm[6]);
-   or(content[5], minterm[0], minterm[2], minterm[6]);
-   buf(content[6], minterm[6]);
-   or(content[7], minterm[5], minterm[6]);
+   //or(content[0], minterm[1], minterm[3], minterm[7]);
+   //or(content[1], minterm[1], minterm[3]);
+   //or(content[2], minterm[1], minterm[3], minterm[7]);
+   //and(content[3], address[0], naddress[0]); //none
+   //or(content[4], minterm[2], minterm[4], minterm[6]);
+   //or(content[5], minterm[0], minterm[2], minterm[6]);
+   //buf(content[6], minterm[6]);
+   //or(content[7], minterm[5], minterm[6]);
 
    // (inst_in == 4'b1111)  ?   2'b00: //HLT
    // (inst_in == 4'b0001)  ?   2'b01: //STA
@@ -225,6 +225,17 @@ module rom_prog_pit(
    //101 ? 10000000 // 0
    //110 ? 11110000 // HLT
    //111 ? 00000101 // 5
+
+   assign content = 
+       (address == 8'b000) ? 8'b00100000: // LDA
+       (address == 8'b001) ? 8'b00000101:
+       (address == 8'b010) ? 8'b00110000: // ADD
+       (address == 8'b011) ? 8'b00000101:
+       (address == 8'b100) ? 8'b00010000: // STA
+       (address == 8'b101) ? 8'b10000000:
+       (address == 8'b110) ? 8'b11110000: // HLT
+       (address == 8'b111) ? 8'b00001111:
+       8'b00000000;
  
 endmodule
 
