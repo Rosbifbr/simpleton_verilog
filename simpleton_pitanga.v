@@ -210,6 +210,21 @@ module rom_prog_pit(
    or(content[5], minterm[0], minterm[2], minterm[6]);
    buf(content[6], minterm[6]);
    or(content[7], minterm[5], minterm[6]);
+
+   // (inst_in == 4'b1111)  ?   2'b00: //HLT
+   // (inst_in == 4'b0001)  ?   2'b01: //STA
+   // (inst_in == 4'b0010)  ?   2'b10: //LDA
+   // (inst_in == 4'b0011)  ?   2'b11: //ADD
+   //                           2'b00; //Caso default, mapeado para HLT
+   //ROM view
+   //000 ? 00100000 // LDA
+   //001 ? 00000111 // 7
+   //010 ? 00110000 // ADD
+   //011 ? 00000111 // 7
+   //100 ? 00010000 // STA 
+   //101 ? 10000000 // 0
+   //110 ? 11110000 // HLT
+   //111 ? 00000101 // 5
  
 endmodule
 
@@ -295,27 +310,35 @@ module controle_simpleton_pit(clk, rst, inst_in, selPC, enPC, selMEM, enREM, wri
     //(entradas_cc == 5'b11101)  ?   3'b000:
     //3'b101; //caso default para tudo
 
-    //Circuit implementation
-    //helper wires
-    wire necc[5:0];
+    // Circuit implementation
+    // Helper wires para as inversões
+    wire necc[4:0];
     not (necc[0], entradas_cc[0]);
     not (necc[1], entradas_cc[1]);
     not (necc[2], entradas_cc[2]);
     not (necc[3], entradas_cc[3]);
     not (necc[4], entradas_cc[4]);
-    
-    wire m01, m02, m03; //three maxterm for PE0
+
+    // PE[0] Logic
+    wire m01, m02, m03, m04;
     and (m01, entradas_cc[4], entradas_cc[3], necc[2], necc[1]);
     and (m02, necc[4], necc[3]);
     and (m03, entradas_cc[4], necc[3], necc[2], necc[1], necc[0]);
-    or (PE[0], m01, m02, m03);
+    and (m04, necc[4], entradas_cc[3], necc[2], necc[1], necc[0]); // Adicionado para entradas_cc = 8
+    or  (PE[0], m01, m02, m03, m04);
 
-    and (PE[1], entradas_cc[4], necc[2], necc[1], entradas_cc[0]); //only one term for pe1 (yes ,3 is dont care)
+    // PE[1] Logic
+    and (PE[1], entradas_cc[4], necc[2], necc[1], entradas_cc[0]); // Apenas um termo necessário
 
-    wire m21, m22;
+    // PE[2] Logic
+    wire m21, m22, m23, m24, m25;
     and (m21, necc[4], necc[3]);
     and (m22, necc[4], entradas_cc[3], necc[2], necc[1], entradas_cc[0]);
-    or (PE[2], m21, m22);
+    and (m23, necc[4], entradas_cc[3], entradas_cc[2], entradas_cc[1]);
+    and (m24, entradas_cc[4], necc[3], entradas_cc[2], entradas_cc[1]);
+    and (m25, entradas_cc[4], entradas_cc[3], entradas_cc[2], entradas_cc[1]);
+    or  (PE[2], m21, m22, m23, m24, m25);
+
     
     //descrição do CCSaida, trocar por uma chamada de CCSaida portas logicas
     wire [6:0] saidas;
@@ -417,7 +440,7 @@ module trad_inst_pit(clk, enable, inst_in, inst_out);
                 (inst_in == 4'b1111)  ?   2'b00: //HLT
                 (inst_in == 4'b0001)  ?   2'b01: //STA
                 (inst_in == 4'b0010)  ?   2'b10: //LDA
-					 (inst_in == 4'b0011)  ?   2'b11: //ADD
+                (inst_in == 4'b0011)  ?   2'b11: //ADD
                                           2'b00; //Caso default, mapeado para HLT
 	assign inst_temp_registrado=inst_reg;												
  		
