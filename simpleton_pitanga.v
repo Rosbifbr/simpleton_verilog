@@ -168,7 +168,7 @@ module memoria_pit(
 	not (nrst, rst);
 	and (zero, nrst, rst);
 	and(enable, address[7], write);
-   rom_prog_pit rp(.address(address), .content(saida_rom));
+  rom_prog_pit rp(.address(address), .content(saida_rom));
 	reg8_pit r(.d(din), .q(saida_ram), .clk(clk), .rst(rst), .set(), .cen(enable));
 	mux21_8b_pit m8b(.e0(saida_rom), .e1(saida_ram), .sel(address[7]), .saida(dout));
 	
@@ -226,16 +226,22 @@ module rom_prog_pit(
    //110 ? 11110000 // HLT
    //111 ? 00000101 // 5
 
-   assign content = 
-       (address == 8'b000) ? 8'b00100000: // LDA
-       (address == 8'b001) ? 8'b00000101:
-       (address == 8'b010) ? 8'b00110000: // ADD
-       (address == 8'b011) ? 8'b00000101:
-       (address == 8'b100) ? 8'b00010000: // STA
-       (address == 8'b101) ? 8'b10000000:
-       (address == 8'b110) ? 8'b11110000: // HLT
-       (address == 8'b111) ? 8'b00001111:
-       8'b00000000;
+       // Define wires for each instruction
+       wire [7:0] LDA = 8'b00100000;
+       wire [7:0] ADD = 8'b00110000;
+       wire [7:0] STA = 8'b00010000;
+       wire [7:0] HLT = 8'b11110000;
+   
+       assign content = 
+           (address == 8'b000) ? LDA : 
+           (address == 8'b001) ? 8'b00000111:
+           (address == 8'b010) ? ADD : 
+           (address == 8'b011) ? 8'b00000111:
+           (address == 8'b100) ? STA : 
+           (address == 8'b101) ? 8'b10000000:
+           (address == 8'b110) ? HLT : 
+           (address == 8'b111) ? 8'b00000101:
+           8'b00000000;
  
 endmodule
 
